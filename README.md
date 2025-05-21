@@ -36,6 +36,6 @@ This code is licensed under the **Creative Commons Attribution-NonCommercial 4.0
 That means:
 - ✅ You can use, modify, and share it freely
 - ❌ **You may not use it for commercial purposes**  
-- ℹ️ For commercial use — [contact me](NotProgrammerForSureForReddit) first.
-
+> ℹ️ If you somehow want to use this code commercially — at least make sure part of the earnings support something meaningful (like charities or open tools).  
+> Honestly, it's such a basic script - just don’t be a leech.
 Full license: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
