@@ -1,6 +1,6 @@
 # 📝 MS-Teams-Transcripter
 
-Tampermonkey script that captures **live captions (CC)** from Microsoft Teams meetings, including **speaker names**, timestamps, and allows **easy download** of the transcript.
+Javascript script, executed in TamperMonkey that captures **live captions (CC)** from Microsoft Teams meetings, including **speaker names**, timestamps, and allows **easy download** of the transcript.
 
 ## 🚀 Features
 
