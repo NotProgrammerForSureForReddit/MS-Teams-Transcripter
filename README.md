@@ -13,12 +13,12 @@ Tampermonkey script that captures **live captions (CC)** from Microsoft Teams me
 
 ## 🔧 How to Use
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/) browser extension
-2. Create a new script and paste the contents of `teams-caption-logger.user.js`
+1. Install [Tampermonkey](https://www.tampermonkey.net/) browser extension - you need later to enable developer settings for that extension (follow tampermonkey guide)
+2. Create a new script and paste the contents of `MS-Teams-Scripter.js`
 3. Join a Microsoft Teams meeting (web version)
-4. Ensure **Live Captions** are turned on
-5. The logger will detect captions and start capturing automatically
-6. Press `Ctrl + Shift + S` or click `⬇️` to download the `.txt` file at any time
+4. Ensure **Live Captions CC** are turned on. You can enable them to be enabled by default (HIGHLY RECOMMENDED). Other users doesn't see that you have it enabled.
+5. The logger will detect live captions CC and start capturing automatically
+6. Press `Ctrl + Shift + S` or click `⬇️` to download the `.txt` file at any time (or finish a call by pressing "disconnect button")
 
 ## 💡 Tip
 
