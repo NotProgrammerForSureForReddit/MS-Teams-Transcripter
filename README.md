@@ -11,7 +11,7 @@ Tampermonkey script that captures **live captions (CC)** from Microsoft Teams me
 - 🧩 Lightweight UI indicator (bottom-right) shows capture status
 - 🛡️ Non-destructive: processes only caption content; no API hooks
 
-## ⚠️ Limitations
+## ⚠️ Limitations (Feel free to fix them and even commit to the code - I will work on improving as a hobby, but not feeling motivated)
 
 - Designed only for the **web version** of Microsoft Teams (`teams.microsoft.com` & ` https://teams.live.com/v2/`)
 - Requires MS Teams in web browser and **Live Captions CC** to be enabled during the meeting
