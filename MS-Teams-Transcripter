@@ -1,0 +1,275 @@
+// ==UserScript==
+// @name         MS-Teams-Transcripter
+// @namespace    http://tampermonkey.net/
+// @version      2.0
+// @description  Capture MS Teams live captions with speaker names and auto-save on leave
+// @author       ForSureNotProgrammerForReddit
+// @license      CC BY-NC 4.0
+// @match        https://teams.microsoft.com/*
+// @match        https://teams.live.com/v2/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    let captions = [];
+    let messageStates = new Map();
+    let interval = null;
+    let indicator = null;
+    let captionsObserver = null;
+    let lastProcessedMessages = new Set();
+
+    function getMeetingTimestamp() {
+        const durationElement = document.querySelector('[data-tid="call-duration"]');
+        if (!durationElement) return "00:00";
+        return durationElement.textContent.trim();
+    }
+
+    function createIndicator() {
+        const existingIndicator = document.querySelector('#teams-caption-logger');
+        if (existingIndicator) existingIndicator.remove();
+        indicator = null;
+
+        try {
+            indicator = document.createElement('div');
+            indicator.id = 'teams-caption-logger';
+            Object.assign(indicator.style, {
+                position: 'fixed',
+                bottom: '10px',
+                right: '10px',
+                backgroundColor: '#333',
+                color: '#fff',
+                padding: '10px',
+                zIndex: '999999',
+                fontSize: '12px',
+                maxWidth: '300px',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+            });
+
+            const content = document.createElement('div');
+            content.id = 'caption-indicator-content';
+            content.textContent = '⏳ Waiting for captions...';
+            content.style.borderBottom = '1px solid #444';
+            content.style.paddingBottom = '8px';
+
+            const downloadButton = document.createElement('button');
+            downloadButton.textContent = '⬇️';
+            Object.assign(downloadButton.style, {
+                backgroundColor: '#444',
+                border: 'none',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                width: 'fit-content'
+            });
+
+            downloadButton.addEventListener('click', downloadTxtFile);
+            downloadButton.addEventListener('mouseover', () => downloadButton.style.backgroundColor = '#555');
+            downloadButton.addEventListener('mouseout', () => downloadButton.style.backgroundColor = '#444');
+
+            indicator.appendChild(content);
+            indicator.appendChild(downloadButton);
+            document.body.appendChild(indicator);
+        } catch (error) {
+            console.error('[CaptionLogger] Error creating indicator:', error);
+        }
+    }
+
+    function updateIndicator() {
+        if (!indicator) {
+            createIndicator();
+            return;
+        }
+        const content = indicator.querySelector('#caption-indicator-content');
+        if (content) {
+            content.textContent = '✅ Capturing captions...';
+        }
+    }
+
+    function shouldUpdateMessage(currentText, existingState) {
+        return (
+            currentText.length > existingState.text.length ||
+            (currentText.length === existingState.text.length && currentText !== existingState.text)
+        );
+    }
+
+    function processMessage(msg, newLines) {
+        const msgId = msg.getAttribute('id');
+        const textEl = msg.querySelector('[data-tid="closed-caption-text"]');
+        if (!msgId || !textEl) return;
+
+        const currentText = textEl.innerText.trim();
+        if (!currentText) return;
+
+        const speakerEl = msg.querySelector('.ui-chat__message__author');
+        const speaker = speakerEl ? speakerEl.innerText.trim() : 'Unknown';
+        const existingState = messageStates.get(msgId);
+
+        if (existingState && shouldUpdateMessage(currentText, existingState)) {
+            existingState.text = currentText;
+            messageStates.set(msgId, existingState);
+            const index = captions.findIndex(line => line.startsWith(${msgId}::));
+            if (index !== -1) {
+                captions[index] = ${msgId}::${existingState.timestamp} - ${speaker}: ${currentText};
+                newLines.push(${existingState.timestamp} - ${speaker}: ${currentText});
+            }
+        }
+
+        if (!existingState) {
+            const timestamp = getMeetingTimestamp();
+            messageStates.set(msgId, { text: currentText, timestamp, speaker });
+            const line = ${msgId}::${timestamp} - ${speaker}: ${currentText};
+            captions.push(line);
+            newLines.push(${timestamp} - ${speaker}: ${currentText});
+        }
+
+        lastProcessedMessages.add(msgId);
+    }
+
+    function extractCaptionData() {
+        const messages = document.querySelectorAll('.ui-chat__message');
+        let newLines = [];
+        messages.forEach((msg) => processMessage(msg, newLines));
+        if (newLines.length > 0) updateIndicator();
+    }
+
+    function startCapturing() {
+        if (interval !== null || !document.body) return;
+
+        createIndicator();
+
+        const captionsContainer = document.querySelector('[role="complementary"]');
+        if (captionsContainer) {
+            if (captionsObserver) captionsObserver.disconnect();
+
+            captionsObserver = new MutationObserver(extractCaptionData);
+            captionsObserver.observe(captionsContainer, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                characterDataOldValue: true
+            });
+        }
+
+        interval = setInterval(extractCaptionData, 2000);
+    }
+
+    function isInTeamsMeeting() {
+        return (
+            document.querySelector('[data-tid="call-duration"]') ||
+            document.querySelector('[role="complementary"]') ||
+            document.querySelector('.ui-chat__message')
+        );
+    }
+
+    function initializeScript() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupObserver);
+        } else {
+            setupObserver();
+        }
+
+        setInterval(() => {
+            if (isInTeamsMeeting() && !interval) {
+                setupObserver();
+            }
+        }, 10000);
+    }
+
+    function setupObserver() {
+        const observer = new MutationObserver(() => {
+            if (document.querySelectorAll('[data-tid="closed-caption-text"]').length > 0) {
+                startCapturing();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true
+        });
+
+        setInterval(() => {
+            if (document.querySelectorAll('[data-tid="closed-caption-text"]').length > 0) {
+                startCapturing();
+            }
+        }, 5000);
+    }
+
+    function downloadTxtFile() {
+        if (captions.length === 0) {
+            alert('Brak danych do zapisania');
+            return;
+        }
+
+        const cleanedCaptions = captions
+            .map(line => line.replace(/^.*?::/, ''))
+            .sort((a, b) => {
+                const getSeconds = (timeStr) => {
+                    const [min, sec] = timeStr.split(':').map(Number);
+                    return min * 60 + sec;
+                };
+                const timeA = getSeconds(a.split(' - ')[0]);
+                const timeB = getSeconds(b.split(' - ')[0]);
+                return timeA - timeB;
+            });
+
+        const baseTitle = (document.title.split("|")[1] || "teams_captions").trim();
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 16).replace("T", "_").replace(":", "-");
+
+        const filename = ${baseTitle}_${formattedDate}.txt;
+        const blob = new Blob([cleanedCaptions.join('\n')], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+
+        console.log([CaptionLogger] Zapisano plik: ${filename});
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+            e.preventDefault();
+            downloadTxtFile();
+        }
+    });
+
+    // AUTO SAVE ON LEAVE BUTTON CLICK
+    function setupHangupListener() {
+        const button = document.querySelector('[data-tid="hangup-main-btn"]');
+        if (!button || button.dataset._captionsBound) return;
+
+        button.dataset._captionsBound = "true";
+
+        button.addEventListener("click", () => {
+            console.log("[CaptionLogger] Leave button clicked – zapisuję plik...");
+            setTimeout(() => {
+                try {
+                    downloadTxtFile();
+                } catch (err) {
+                    console.error("[CaptionLogger] Błąd przy zapisie po rozłączeniu:", err);
+                }
+            }, 1000);
+        });
+
+        console.log('[CaptionLogger] Listener na "Leave" button został podpięty.');
+    }
+
+    setInterval(() => {
+        const button = document.querySelector('[data-tid="hangup-main-btn"]');
+        if (button && !button.dataset._captionsBound) {
+            setupHangupListener();
+        }
+    }, 2000);
+
+    // Start
+    initializeScript();
+})();
