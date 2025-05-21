@@ -2,7 +2,7 @@
 // @name         MS-Teams-Transcripter
 // @namespace    http://tampermonkey.net/
 // @version      2.0
-// @description  Capture MS Teams live captions with speaker names and auto-save on leave
+// @description  Capture MS Teams live captions (Last edit 22 may 2025)
 // @author       ForSureNotProgrammerForReddit
 // @license      CC BY-NC 4.0
 // @match        https://teams.microsoft.com/*
