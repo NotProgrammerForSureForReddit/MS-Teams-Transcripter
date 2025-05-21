@@ -28,3 +28,14 @@ Tampermonkey script that captures **live captions (CC)** from Microsoft Teams me
 6. Press `Ctrl + Shift + S` or click `⬇️` to download the `.txt` file at any time of a call (or download at the end by finishing a call by pressing "disconnect button")
 
 
+
+
+## 📄 License
+
+This code is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**.  
+That means:
+- ✅ You can use, modify, and share it freely
+- ❌ **You may not use it for commercial purposes**  
+- ℹ️ For commercial use — [contact me](NotProgrammerForSureForReddit) first.
+
+Full license: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
