@@ -28,6 +28,15 @@ Javascript script, executed in TamperMonkey that captures **live captions (CC)**
 6. Press `Ctrl + Shift + S` or click `⬇️` to download the `.txt` file at any time of a call (or download at the end by finishing a call by pressing "disconnect button")
 
 
+## 🤝 Contributions & Feedback
+
+Feel free to suggest your own improvements — via pull requests, issues or discussions.  
+Even small changes are welcome, whether it's fixing a bug, cleaning up the code or making something more readable.
+
+> I'm still learning how GitHub works myself, so please be patient 😅  
+> Once I test your changes and see that they work, I’ll be happy to merge them into `main`.
+
+You can also open a [discussion](../../discussions) if you just want to ask a question, leave a comment, or share an idea.
 
 
 ## 📄 License
